@@ -1,7 +1,7 @@
 const { Client, Collection } = require("discord.js");
 const Table = require('cli-table');
 const fs = require('fs');
-const yaml = require('js-yaml');
+const { loadYaml, writeYaml } = require("./yaml");
 
 const colors = require('colors');
 colors.setTheme({
@@ -16,42 +16,39 @@ class DragonBot extends Client {
     constructor(options) {
         super(options);
 
-        this.setting = yaml.load(fs.readFileSync('./assets/yaml/setting.yaml', 'utf8'));
+        this.setting = loadYaml('./assets/yaml/setting.yaml')['bot'];
         this.slashCommands = new Collection();
 
-        this.commandFolder = `${process.cwd()}/commands`;
-        this.eventFolder = `${process.cwd()}/events`;
+        this.folder = this.setting['folder'];
+        this.Channel = this.setting['channel'];
+    }
+
+    syncSlashCommand() {
+        Object.keys(this.registeredAppCmd).forEach(command => {
+            if (!this.newRegisterAppCmd.includes(command)) {  //deleted global command
+                this.application.commands.delete(this.registeredAppCmd[command]);
+                delete this.registeredAppCmd[command];
+            }
+        });
+
+        writeYaml('./assets/yaml/applicationCommands.yaml', this.registeredAppCmd);
     }
 
     async init() {
         this.testGuild = this.guilds.cache.get(this.setting.testGuild);
-        this.registeredAppCmd = yaml.load(fs.readFileSync('./assets/yaml/applicationCommands.yaml', 'utf8')) ?? {};
+        this.registeredAppCmd = loadYaml('./assets/yaml/applicationCommands.yaml') ?? {};
         this.newRegisterAppCmd = [];
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
 
-        this.loadAllSlash()
-            .then(value => table.push(...value, ...this.loadAllEvents()))
-            .then(() => {
-                console.log(table.toString());
-
-                Object.keys(this.registeredAppCmd).forEach(command => {
-                    if (!this.newRegisterAppCmd.includes(command)) {  //deleted global command
-                        this.application.commands.delete(this.registeredAppCmd[command]);
-                        delete this.registeredAppCmd[command];
-                    }
-                });
-
-                const commandData = yaml.dump(this.registeredAppCmd);
-                //console.log(commandData);
-                fs.writeFileSync('./assets/yaml/applicationCommands.yaml', commandData);
-            });
+        table.push(...await this.loadAllSlash(), ...this.loadAllEvents());
+        console.log(table.toString());
     }
 
     //#region slashCommands
 
     async loadAllSlash() {
-        const path = `${this.commandFolder}/slashCommands`
+        const path = this.folder['slashCommand']
         const commandFiles = fs.readdirSync(path).filter(file => file.endsWith('.js'));
         const results = []
 
@@ -69,6 +66,8 @@ class DragonBot extends Client {
             }
         }
         await load();
+        this.syncSlashCommand();
+
         return (results);
     }
 
@@ -102,7 +101,7 @@ class DragonBot extends Client {
     //#region events
 
     loadAllEvents() {
-        const eventFiles = fs.readdirSync(this.eventFolder).filter(file => file.endsWith('.js'));
+        const eventFiles = fs.readdirSync(this.folder['event']).filter(file => file.endsWith('.js'));
         const results = [];
 
         eventFiles.forEach(file => {
@@ -118,7 +117,7 @@ class DragonBot extends Client {
     }
 
     loadEvent(file) {
-        require(`${this.eventFolder}/${file}`)(this);
+        require(`${this.folder['event']}/${file}`)(this);
     }
 
     //#endregion
