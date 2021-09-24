@@ -8,10 +8,10 @@ module.exports = (client) => {
             //#region command not exist
             if (!command) { //指令已不存在
                 interaction.reply({ content: `command \`${interaction.commandName}\` is no longer exist.`, ephemeral: true })
-                try { //刪除斜線指令
-                    interaction.guild.commands.delete(interaction.commandId);
-                    client.application.commands.delete(interaction.commandId)
-                } finally { return };
+                //刪除斜線指令
+                try { interaction.guild.commands.delete(interaction.commandId); }
+                catch { client.application.commands.delete(interaction.commandId) }
+                finally { return };
             }
             //#endregion
             try {
