@@ -16,7 +16,7 @@ class DragonBot extends Client {
     constructor(options) {
         super(options);
 
-        this.setting = loadYaml('./assets/yaml/setting.yaml')['bot'];
+        this.setting = loadYaml('setting')['bot'];
         this.slashCommands = new Collection();
 
         this.folder = this.setting['folder'];
@@ -31,12 +31,12 @@ class DragonBot extends Client {
             }
         });
 
-        writeYaml('./assets/yaml/applicationCommands.yaml', this.registeredAppCmd);
+        writeYaml('applicationCommands', this.registeredAppCmd);
     }
 
     async init() {
         this.testGuild = this.guilds.cache.get(this.setting.testGuild);
-        this.registeredAppCmd = loadYaml('./assets/yaml/applicationCommands.yaml') ?? {};
+        this.registeredAppCmd = loadYaml('applicationCommands') ?? {};
         this.newRegisterAppCmd = [];
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });

@@ -14,23 +14,25 @@ const CUSTOM_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
 
 /**
  *
- * @param { String } file - path of the file
+ * @param { String } file - file name
+ * @param { String } path - path of the file, '/assets/yaml' by default
  * @param { Array } options - load options
  * @returns { String }
  */
-const loadYaml = (file, options = []) => {
-    return yaml.load(fs.readFileSync(file, 'utf8'), { schema: CUSTOM_SCHEMA, ...options });
+const loadYaml = (file, path = `${process.cwd()}/assets/yaml`, options = []) => {
+    return yaml.load(fs.readFileSync(`${path}/${file}.yaml`, 'utf8'), { schema: CUSTOM_SCHEMA, ...options });
 }
 
 /**
  *
- * @param { String } file - path of the file
+ * @param { String } file - file name
  * @param { Object } data - object of data to write
+ * @param { String } path - path of the file, '/assets/yaml' by default
  * @param { Array } options - dump options
  * @returns { null }
  */
-const writeYaml = (file, data, options = []) => {
-    fs.writeFileSync(file, yaml.dump(data, { schema: CUSTOM_SCHEMA, ...options }));
+const writeYaml = (file, data, path = `${process.cwd()}/assets/yaml`, options = []) => {
+    fs.writeFileSync(`${path}/${file}.yaml`, yaml.dump(data, { schema: CUSTOM_SCHEMA, ...options }));
     return;
 }
 
