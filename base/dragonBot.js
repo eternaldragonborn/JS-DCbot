@@ -1,7 +1,7 @@
 const { Client, Collection } = require("discord.js");
 const Table = require('cli-table');
 const fs = require('fs');
-const { loadYaml, writeYaml } = require("./yaml");
+const { loadYaml } = require("../helpers/yaml");
 
 const colors = require('colors');
 colors.setTheme({
@@ -23,20 +23,18 @@ class DragonBot extends Client {
         this.Channel = this.setting['channel'];
     }
 
-    syncSlashCommand() {
-        Object.keys(this.registeredAppCmd).forEach(command => {
-            if (!this.newRegisterAppCmd.includes(command)) {  //deleted global command
-                this.application.commands.delete(this.registeredAppCmd[command]);
-                delete this.registeredAppCmd[command];
-            }
+    syncApplicationCommand() {
+        this.application.commands.fetch().then(commands => {
+            commands.each(command => {
+                if (!this.newRegisterAppCmd.includes(command.name)) {
+                    this.application.commands.delete(command);
+                }
+            });
         });
-
-        writeYaml('applicationCommands', this.registeredAppCmd);
     }
 
     async init() {
         this.testGuild = this.guilds.cache.get(this.setting.testGuild);
-        this.registeredAppCmd = loadYaml('applicationCommands') ?? {};
         this.newRegisterAppCmd = [];
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
@@ -66,7 +64,7 @@ class DragonBot extends Client {
             }
         }
         await load();
-        this.syncSlashCommand();
+        this.syncApplicationCommand();
 
         return (results);
     }
@@ -83,7 +81,6 @@ class DragonBot extends Client {
             if (command.config.guilds.length === 0) {  //application command
                 this.application.commands.create(command.commandData) //register and record
                     .then(command => {
-                        this.registeredAppCmd[command.name] = command.id;
                         this.newRegisterAppCmd.push(command.name);
                         resolve(['SUCCESS'.success, 'global command'.warn]);
                     });

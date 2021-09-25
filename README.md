@@ -2,10 +2,11 @@
 JS版Dragonbot
 ## TODO
 + base
-    + [ ] `database` - postgreSQL、redis
     + [ ] `dragonBot` - ?優化init
-    + [ ] `logger`
     + [ ] ?`prefixCommand` - prefix command 模板
++ helpers
+    + [ ] `logger`
+    + [ ] `database` - postgreSQL、redis
 + commands
     + slash command - ?指令分類
         + [ ] `subscribe` - 訂閱系統
