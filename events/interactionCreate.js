@@ -1,5 +1,10 @@
-const { Client, Interaction, MessageEmbed } = require("discord.js");
+const { MessageEmbed } = require("discord.js");
+const DragonBot = require('../base/dragonBot.js');
 
+/**
+ *
+ * @param { DragonBot } client
+ */
 module.exports = (client) => {
     client.on('interactionCreate', (interaction) => {
         if (!interaction.isCommand()) return;
@@ -15,12 +20,18 @@ module.exports = (client) => {
             }
             //#endregion
             try {
-                command.execute(client, interaction);
-            } catch (error) {
+                client.logger.log(`${interaction.member?.displayName ?? interaction.user.username} used command "${command.name}".`, 'CMD');
+                command.execute(client, interaction)
+                    .then(() => client.logger.log(`End of command "${command.name}" execution.`, 'CMD'));
+            } catch (error) {  //疑似無作用
+                client.logger.log(`There is an error when executing command "${command.name}".\n\t${error}`);
                 const embed = new MessageEmbed().setTitle('指令執行錯誤').setColor('RED')
                     .addField('原因：', error);
-                interaction.reply({ embeds: [embed] });
+                interaction.channel.send({ embeds: [embed] });
+            } finally {
+
             }
         }
     });
+
 }
