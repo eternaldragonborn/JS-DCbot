@@ -12,9 +12,10 @@ JS版Dragonbot
         + [ ] `subscribe` - 訂閱系統
         + [ ] `book` - 本本網址管理
         + [ ] ?`music` - 音樂
-        + [ ] `load` - 重載（WIP）
+        + [ ] `reload` - 重載（WIP）
     + ?prefix command
         + [ ] `imgur` - 上傳圖片到imgur
+        + [ ] `load` - 重載
 + events
     + [ ] `messageCreate` - ...
 ## 已知問題

@@ -3,6 +3,7 @@ const Table = require('cli-table');
 const fs = require('fs');
 const { loadYaml } = require("../helpers/yaml");
 const glob = require('glob');
+const { SlashCreator, GatewayServer } = require('slash-create');
 
 const colors = require('colors');
 const { Logger } = require("../helpers/logger");
@@ -19,9 +20,19 @@ class DragonBot extends Client {
         super(options);
 
         this.setting = loadYaml('setting')['bot'];
+        this.creator = new SlashCreator({
+            applicationID: process.env['APP_ID'],
+            publicKey: process.env['APP_TOKEN'],
+            token: process.env['BOT_TOKEN']
+        }).withServer(
+            new GatewayServer(
+                (handler) => this.ws.on('INTERACTION_CREATE', handler)
+            )
+        )
         this.slashCommands = new Collection();
 
         this.folder = this.setting['folder'];
+        this.Guild = this.setting['guild'];
         this.Channel = this.setting['channel'];
     }
 
@@ -32,15 +43,18 @@ class DragonBot extends Client {
         this.logger = new Logger();
         this.logger.log('Bot initializing.');
 
+        this.pg = new (require('../helpers/database'))(this);
 
         this.testGuild = this.guilds.cache.get(this.setting.testGuild);
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
 
-        table.push(...await this.loadAllSlash(), ...this.loadAllEvents());
-        console.log(table.toString());
+        this.loadAllSlash();
+        this.loadAllEvents();
+        /* table.push(...await this.loadAllSlash(), ...this.loadAllEvents());
+        console.log(table.toString()); */
 
-        this.logger.log('End of initialzing.', 'INFO');
+        this.logger.log('End of initialzing.', 'READY');
     }
 
     async unload(category) {
@@ -52,6 +66,10 @@ class DragonBot extends Client {
                 const commandName = file.split('/').pop().slice(0, -3);
                 this.slashCommands.delete(commandName);
             }
+            /* else if (category === 'event') {
+                const eventName = file.split('/').pop().slice(0, -3);
+                this.removeListener(eventName, () => { return; });
+            } */
         })
     }
 
@@ -68,12 +86,25 @@ class DragonBot extends Client {
         });
     }
 
-    async loadAllSlash() {
-        const path = this.folder['slashCommand'];
+    async loadAllSlash(path = '') {
+        //const categories = fs.readdirSync(this.folder['slashCommand']);
+        const files = glob.sync(`${this.folder['slashCommand']}/*/*.js`)
+
+        this.logger.log('Loading "slash commands" files.', 'INFO');
+
+        files.forEach(file => {
+            try {
+                this.creator.registerCommand(require(file));
+                this.logger.log(`file ${file} loaded.`, 'READY');
+            }
+            catch (error) { this.logger.log(`load file ${file} failed.\n\t${error}`, 'ERROR'); }
+        });
+        this.creator.syncCommands({ syncGuilds: true, deleteCommands: true });
+        /* const path = this.folder['slashCommand'];
         const commandFiles = fs.readdirSync(path).filter(file => file.endsWith('.js'));
         const results = []
 
-        this.logger.log('Loading slash commands files.', 'INFO');
+        this.logger.log('Loading "slash commands" files.', 'INFO');
 
         this.newRegisterAppCmd = [];
         this.guilds.cache.forEach(guild => guild.commands.set([])); //reset guild command
@@ -88,14 +119,14 @@ class DragonBot extends Client {
                     })
                     .catch((err) => {
                         results.push([...result, 'ERROR'.error, err.message.error])
-                        this.logger.log(`Failed to load slash command "${commandFile}".\n\t${err}`, 'ERROR');
+                        this.logger.log(`Failed to load slash command ${commandFile}.\n\t${err}`, 'ERROR');
                     });
             }
         }
         await load();
         this.syncApplicationCommand();
 
-        return (results);
+        return (results); */
     }
 
     async loadSlash(path, file) {
@@ -121,13 +152,6 @@ class DragonBot extends Client {
                 else {
                     resolve(['SUCCESS'.success, '']);
                 }
-                /* this.application.commands.create(command.commandData) //register and record
-                    .then(command => {
-                        this.newRegisterAppCmd.push(command.name);
-                        resolve(['SUCCESS'.success, 'global command'.warn]);
-
-                        this.logger.log(`Application command "${command.name}" registered.`)
-                    }); */
             }
             else {
                 for (const guild of command.config.guilds)
@@ -145,7 +169,7 @@ class DragonBot extends Client {
         const eventFiles = fs.readdirSync(this.folder['event']).filter(file => file.endsWith('.js'));
         const results = [];
 
-        this.logger.log('Loading events files.')
+        this.logger.log('Loading "events" files.')
 
         eventFiles.forEach(file => {
             const result = ['event', file];
