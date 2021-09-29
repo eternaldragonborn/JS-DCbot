@@ -1,12 +1,21 @@
 bot:
   prefix: +
   ownerId: &OWNER "384233645621248011"
-  testGuild: "719132687897591808"
+  creatorSetting:
+    applicationID: !ENV "APP_ID"
+    publicKey: !ENV "APP_TOKEN"
+    token: !ENV "DISCORD_TOKEN"
   folder:
     command: !FOLDER &COMMAND_FOLDER "commands"
     slashCommand: !FOLDER [*COMMAND_FOLDER, "slashCommands"]
     prefixCommand: !FOLDER [*COMMAND_FOLDER, "prefixCommands"]
     event: !FOLDER "events"
+
+  guild:
+    testGuild: &TEST_GUILD "719132687897591808"
+    mainGuilds:
+      - *TEST_GUILD
+      - "669934356172636199"
 
   channel:
     startingLog: "867831786255417365"

@@ -6,17 +6,18 @@ JS版Dragonbot
     + [ ] ?`prefixCommand` - prefix command 模板
 + helpers
     + [x] `logger`
-    + [ ] `database` - postgreSQL、redis
+    + [x] `database` - ~~postgreSQL~~、redis
 + commands
+    + [ ] ?`music` - 音樂
     + slash command - ?指令分類
-        + [ ] `subscribe` - 訂閱系統
-        + [ ] `book` - 本本網址管理
-        + [ ] ?`music` - 音樂
-        + [ ] `load` - 重載（WIP）
+        + [ ] `subscribe` - 訂閱系統（WIP）
+        + [x] `reload` - 重載
     + ?prefix command
         + [ ] `imgur` - 上傳圖片到imgur
+        + [ ] `load` - 重載
+        + [ ] `book` - 本本網址管理
 + events
     + [ ] `messageCreate` - ...
 ## 已知問題
-+ reload event之後使用任何指令都會被視為執行二次，造成unknown interaction
-+ interactionCreate catch不明錯誤
++ commandInteraction被reload後，listener會被重複執行(不會產生錯誤，無重大影響)
++ register command時為了傳入client，無法使用registerCommandIn和直接reload指令('可能'影響效率，考慮直接export client)
