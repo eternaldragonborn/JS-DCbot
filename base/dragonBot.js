@@ -1,4 +1,4 @@
-const { Client, Collection } = require("discord.js");
+const { Client } = require("discord.js");
 const Table = require('cli-table');
 const fs = require('fs');
 const { loadYaml } = require("../helpers/yaml");
@@ -20,27 +20,24 @@ class DragonBot extends Client {
         super(options);
 
         this.setting = loadYaml('setting')['bot'];
-        this.creator = new SlashCreator({
-            applicationID: process.env['APP_ID'],
-            publicKey: process.env['APP_TOKEN'],
-            token: process.env['BOT_TOKEN']
-        }).withServer(
-            new GatewayServer(
-                (handler) => this.ws.on('INTERACTION_CREATE', handler)
-            )
-        )
-        this.slashCommands = new Collection();
+        this.creator = new SlashCreator(this.setting['creatorSetting'])
+            .withServer(
+                new GatewayServer(
+                    (handler) => this.ws.on('INTERACTION_CREATE', handler)
+                )
+            );
 
         this.folder = this.setting['folder'];
         this.Guild = this.setting['guild'];
         this.Channel = this.setting['channel'];
+        this.logger = new Logger();
     }
 
     async init() {
         if (false)
             await this.channels.fetch(this.Channel['startingLog']) //send last log to server
-                .then(channel => channel.send({ files: ['JSbot.log'] }))
-        this.logger = new Logger();
+                .then(channel => channel.send({ files: ['JSbot_last.log'] }))
+
         this.logger.log('Bot initializing.');
 
         this.pg = new (require('../helpers/database'))(this);
@@ -49,8 +46,9 @@ class DragonBot extends Client {
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
 
-        this.loadAllSlash();
         this.loadAllEvents();
+        this.loadSlash();
+
         /* table.push(...await this.loadAllSlash(), ...this.loadAllEvents());
         console.log(table.toString()); */
 
@@ -58,107 +56,37 @@ class DragonBot extends Client {
     }
 
     async unload(category) {
-        const path = this.folder[category];
-        const files = glob.sync(`${path}/*.js`);
-        files.forEach(file => {
+        var path = '';
+        (category === 'slashCommand' || category === 'event' || category === 'prefix') ?
+            path = this.folder[category] :
+            path = `${this.folder['slashCommand']}/${category}`;
+        glob.sync(`${path}/*.js`).forEach(file => {
             delete require.cache[require.resolve(file)];
-            if (category === 'slashCommand') {
-                const commandName = file.split('/').pop().slice(0, -3);
-                this.slashCommands.delete(commandName);
-            }
-            /* else if (category === 'event') {
-                const eventName = file.split('/').pop().slice(0, -3);
-                this.removeListener(eventName, () => { return; });
-            } */
         })
     }
 
     //#region slashCommands
-    syncApplicationCommand() {
-        this.application.commands.fetch().then(commands => {
-            commands.each(command => {
-                if (!this.newRegisterAppCmd.includes(command.name)) {
-                    this.application.commands.delete(command);
 
-                    this.logger.log(`Application command "${command.name}" removed.`);
-                }
-            });
-        });
-    }
-
-    async loadAllSlash(path = '') {
-        //const categories = fs.readdirSync(this.folder['slashCommand']);
-        const files = glob.sync(`${this.folder['slashCommand']}/*/*.js`)
-
-        this.logger.log('Loading "slash commands" files.', 'INFO');
-
-        files.forEach(file => {
+    loadSlash(category = undefined) {
+        glob.sync(`${this.folder['slashCommand']}/${category ?? '*'}/*.js`).forEach(file => {
+            const fileName = file.split('/').pop()
             try {
-                this.creator.registerCommand(require(file));
-                this.logger.log(`file ${file} loaded.`, 'READY');
-            }
-            catch (error) { this.logger.log(`load file ${file} failed.\n\t${error}`, 'ERROR'); }
-        });
-        this.creator.syncCommands({ syncGuilds: true, deleteCommands: true });
-        /* const path = this.folder['slashCommand'];
-        const commandFiles = fs.readdirSync(path).filter(file => file.endsWith('.js'));
-        const results = []
-
-        this.logger.log('Loading "slash commands" files.', 'INFO');
-
-        this.newRegisterAppCmd = [];
-        this.guilds.cache.forEach(guild => guild.commands.set([])); //reset guild command
-
-
-        const load = async () => {
-            for (const commandFile of commandFiles) {
-                const result = ['slashCommand', commandFile];
-                await this.loadSlash(path, commandFile)
-                    .then((value) => {
-                        results.push([...result, ...value]);
-                    })
-                    .catch((err) => {
-                        results.push([...result, 'ERROR'.error, err.message.error])
-                        this.logger.log(`Failed to load slash command ${commandFile}.\n\t${err}`, 'ERROR');
-                    });
-            }
-        }
-        await load();
-        this.syncApplicationCommand();
-
-        return (results); */
-    }
-
-    async loadSlash(path, file) {
-        return new Promise((resolve) => {
-            this.logger.log(`Loading file ${file}.`, 'INFO')
-
-            const command = new (require(`${path}/${file}`))(this);
-            if (!command.config.enabled) {  //command is not enabled
-                resolve(['WARN'.warn, 'not enabled'.warn]);
-                this.logger.log(`Slash command "${command.name}" not enabled.`, 'WARN');
-            }
-
-            this.slashCommands.set(command.name, command);
-
-            //slash command register
-            if (command.config.guilds.length === 0) {  //application command
-                if (!this.application.commands.resolve(command.commandData)) {  //not registered yet
-                    this.newRegisterAppCmd.push(command.name);
-
-                    this.logger.log(`Application command "${command.name}" registered.`)
-                    resolve(['SUCCESS'.success, 'global command'.warn]);
+                const command = this.creator.commands.find(cmd => cmd.filePath.includes(fileName));
+                const newCommand = new (require(file))(this, this.creator)
+                if (command) {// has been registered
+                    (newCommand.enabled ?? true) ?
+                        this.creator.reregisterCommand(newCommand, command) :
+                        this.logger.log(`Command ${newCommand.commandName} not enabled.`, 'WARN')
                 }
                 else {
-                    resolve(['SUCCESS'.success, '']);
+                    newCommand.enabled ?? true ?
+                        this.creator.registerCommand(newCommand) :
+                        this.logger.log(`Command ${newCommand.commandName} not enabled.`, 'WARN');
                 }
             }
-            else {
-                for (const guild of command.config.guilds)
-                    this.guilds.cache.get(guild).commands.create(command.commandData);
-                resolve(['SUCCESS'.success, '']);
-            }
-        })
+            catch (error) { this.logger.log(`Failed to load file ${fileName}.\n\t${error}`, 'ERROR'); }
+        });
+        this.creator.syncCommands({ syncGuilds: true, deleteCommands: true });
     }
 
     //#endregion
@@ -180,7 +108,7 @@ class DragonBot extends Client {
             } catch (error) {
                 result.push('ERROR'.error, error.message.error);
 
-                this.logger.log(`Failed to load event ${file}\n ${error}`, 'ERROR');
+                this.logger.log(`Failed to load event ${file}\n\t${error}`, 'ERROR');
             } finally { results.push(result); }
         });
         return results;

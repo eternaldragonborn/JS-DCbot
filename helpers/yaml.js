@@ -9,6 +9,10 @@ const CUSTOM_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
     new yaml.Type('!FOLDER', {
         kind: 'sequence', //序列
         construct: data => data.join('/')
+    }),
+    new yaml.Type('!ENV', {
+        kind: 'scalar',
+        construct: data => process.env[data]
     })
 ])
 

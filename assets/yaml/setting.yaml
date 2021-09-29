@@ -1,6 +1,10 @@
 bot:
   prefix: +
   ownerId: &OWNER "384233645621248011"
+  creatorSetting:
+    applicationID: !ENV "APP_ID"
+    publicKey: !ENV "APP_TOKEN"
+    token: !ENV "DISCORD_TOKEN"
   folder:
     command: !FOLDER &COMMAND_FOLDER "commands"
     slashCommand: !FOLDER [*COMMAND_FOLDER, "slashCommands"]
