@@ -1,16 +1,26 @@
 const { MessageEmbed } = require("discord.js");
 
 module.exports = (client) => {
+    client.creator.removeAllListeners();
+
     client.creator.on('commandRegister', (command, creator) => {
-        client.logger.log(`Command \`${command.commandName}\` registered.`, 'READY');
+        command.guildIDs?.length > 0 ?
+            client.logger.log(`Command \`${command.commandName}\` registered.`, 'READY') :
+            client.logger.log(`Global command \`${command.commandName}\` registered.`, 'WARN');
     });
 
     client.creator.on('commandReregister', (command, oldCommand) => {
-        client.logger.log(`Command \`${oldCommand.commandName}\` re-registered`, 'READY');
+        command.guildIDs?.length > 0 ?
+            client.logger.log(`Command \`${command.commandName}\` registered.`, 'READY') :
+            client.logger.log(`Global command \`${command.commandName}\` registered.`, 'WARN');
     });
 
     client.creator.on('commandUnregister', (command) => {
         client.logger.log(`Command \`${command.commandName}\` unregistered.`, 'WARN');
+    });
+
+    client.creator.on('synced', () => {
+        client.logger.log('Commands synced!', 'READY');
     });
 
     client.creator.on('commandError', (command, err, ctx) => {
@@ -30,11 +40,11 @@ module.exports = (client) => {
     })
 
     client.creator.on('commandRun', (command, result, ctx) => {
-        client.logger.log(`Executing command \`${command.commandName}\`.`);
-        result.then(() => client.logger.log(`Command \`${command.commandName}\` executed.`, 'READY'));
+        client.logger.log(`Executing command \`${command.commandName}\`.`, 'CMD');
+        result.then(() => client.logger.log(`Command \`${command.commandName}\` executed.`, 'CMD'));
     })
 
     client.creator.on('error', (err) => {
-        client.logger.log(`Creator error.\n\t${err}`);
+        client.logger.log(`Creator error.\n\t${err}`, 'ERROR');
     })
 }

@@ -19,5 +19,4 @@ JS版Dragonbot
 + events
     + [ ] `messageCreate` - ...
 ## 已知問題
-+ commandInteraction被reload後，listener會被重複執行(不會產生錯誤，無重大影響)
 + register command時為了傳入client，無法使用registerCommandIn和直接reload指令('可能'影響效率，考慮直接export client)

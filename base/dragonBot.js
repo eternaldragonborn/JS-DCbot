@@ -20,17 +20,20 @@ class DragonBot extends Client {
         super(options);
 
         this.setting = loadYaml('setting')['bot'];
+        this.folder = this.setting['folder'];
+        this.Guild = this.setting['guild'];
+        this.Channel = this.setting['channel'];
+        this.owner = this.setting['ownerId'];
+        this.manager = this.setting['manager'];
+
         this.creator = new SlashCreator(this.setting['creatorSetting'])
             .withServer(
                 new GatewayServer(
                     (handler) => this.ws.on('INTERACTION_CREATE', handler)
                 )
             );
-
-        this.folder = this.setting['folder'];
-        this.Guild = this.setting['guild'];
-        this.Channel = this.setting['channel'];
         this.logger = new Logger();
+        this.pg = new (require('../helpers/database'))(this).client;
     }
 
     async init() {
@@ -39,10 +42,6 @@ class DragonBot extends Client {
                 .then(channel => channel.send({ files: ['JSbot_last.log'] }))
 
         this.logger.log('Bot initializing.');
-
-        this.pg = new (require('../helpers/database'))(this);
-
-        this.testGuild = this.guilds.cache.get(this.setting.testGuild);
 
         const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
 
@@ -67,26 +66,32 @@ class DragonBot extends Client {
 
     //#region slashCommands
 
-    loadSlash(category = undefined) {
+    loadSlash(category = null) {
+        const results = [];
         glob.sync(`${this.folder['slashCommand']}/${category ?? '*'}/*.js`).forEach(file => {
-            const fileName = file.split('/').pop()
+            const fileName = file.split('/').pop();
             try {
                 const command = this.creator.commands.find(cmd => cmd.filePath.includes(fileName));
-                const newCommand = new (require(file))(this, this.creator)
-                if (command) {// has been registered
-                    (newCommand.enabled ?? true) ?
+                const newCommand = new (require(file))(this, this.creator);
+                if (newCommand.enabled ?? true) {
+                    command ?  // if the command is registered
                         this.creator.reregisterCommand(newCommand, command) :
-                        this.logger.log(`Command ${newCommand.commandName} not enabled.`, 'WARN')
-                }
-                else {
-                    newCommand.enabled ?? true ?
-                        this.creator.registerCommand(newCommand) :
-                        this.logger.log(`Command ${newCommand.commandName} not enabled.`, 'WARN');
+                        this.creator.registerCommand(newCommand);
+                    newCommand.guildIDs?.length > 0 ?
+                        results.push([newCommand.commandName, '✅']) :
+                        results.push([newCommand.commandName, '⚠️\nGLOBAL']);
+                } else {
+                    results.push([newCommand.commandName, '⚠️\nNOT ENABLED!']);
+                    this.logger.log(`Command \`${newCommand.commandName}\` not enabled.`, 'WARN');
                 }
             }
-            catch (error) { this.logger.log(`Failed to load file ${fileName}.\n\t${error}`, 'ERROR'); }
+            catch (error) {
+                results.push([fileName, `❌\n${String(error)}`]);
+                this.logger.log(`Failed to load file ${fileName}.\n\t${error}`, 'ERROR');
+            }
         });
         this.creator.syncCommands({ syncGuilds: true, deleteCommands: true });
+        return results;
     }
 
     //#endregion
@@ -97,7 +102,7 @@ class DragonBot extends Client {
         const eventFiles = fs.readdirSync(this.folder['event']).filter(file => file.endsWith('.js'));
         const results = [];
 
-        this.logger.log('Loading "events" files.')
+        this.logger.log('Loading "events" files.');
 
         eventFiles.forEach(file => {
             const result = ['event', file];

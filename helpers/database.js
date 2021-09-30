@@ -11,14 +11,24 @@ class PostgreSQL {
                 rejectUnauthorized: false
             },
         })
+        this.bot = client;
 
-        this.client.connect()
-            .then(() => client.logger.log('PostgreSQL database connected.', 'READY'))
-            .catch((err) => client.logger.log('PostgreSQL connect error, ' + err, 'ERROR'));
+        this.conn();
 
         this.client.on('error', (err) => {
             client.logger.log('PostgreSQL connection error.\n\t' + err, 'ERROR');
         });
+
+        this.client.on('end', () => {
+            client.logger.log('PostgreSQL disconnected.', 'WARN');
+            this.conn();
+        });
+    }
+
+    async conn() {
+        this.client.connect()
+            .then(() => this.bot.logger.log('PostgreSQL database connected.', 'READY'))
+            .catch((err) => this.bot.logger.log('PostgreSQL connect error, ' + err, 'ERROR'));
     }
 }
 
