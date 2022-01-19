@@ -4,6 +4,7 @@ const fs = require('fs');
 const { loadYaml } = require("../helpers/yaml");
 const glob = require('glob');
 const { SlashCreator, GatewayServer } = require('slash-create');
+const { redis, getRandomCode } = require('../helpers/database');
 
 const colors = require('colors');
 const { Logger } = require("../helpers/logger");
@@ -21,10 +22,7 @@ class DragonBot extends Client {
 
         this.setting = loadYaml('setting')['bot'];
         this.folder = this.setting['folder'];
-        this.Guild = this.setting['guild'];
         this.Channel = this.setting['channel'];
-        this.owner = this.setting['ownerId'];
-        this.manager = this.setting['manager'];
 
         this.creator = new SlashCreator(this.setting['creatorSetting'])
             .withServer(
@@ -33,7 +31,7 @@ class DragonBot extends Client {
                 )
             );
         this.logger = new Logger();
-        this.pg = new (require('../helpers/database'))(this).client;
+        // this.pg = new (require('../helpers/database'))(this).client;
     }
 
     async init() {
@@ -47,9 +45,12 @@ class DragonBot extends Client {
 
         this.loadAllEvents();
         this.loadSlash();
+        // await this.login(process.env.DISCORD_TOKEN);
 
         /* table.push(...await this.loadAllSlash(), ...this.loadAllEvents());
         console.log(table.toString()); */
+
+        redis.set('bot-token', getRandomCode(14));
 
         this.logger.log('End of initialzing.', 'READY');
     }
@@ -61,7 +62,7 @@ class DragonBot extends Client {
             path = `${this.folder['slashCommand']}/${category}`;
         glob.sync(`${path}/*.js`).forEach(file => {
             delete require.cache[require.resolve(file)];
-        })
+        });
     }
 
     //#region slashCommands
@@ -72,10 +73,12 @@ class DragonBot extends Client {
             const fileName = file.split('/').pop();
             try {
                 const command = this.creator.commands.find(cmd => cmd.filePath.includes(fileName));
-                const newCommand = new (require(file))(this, this.creator);
+                const newCommand = new (require(file))(this.creator);
                 if (newCommand.enabled ?? true) {
+                    //考慮改為command.reload()及registerIn()
                     command ?  // if the command is registered
-                        this.creator.reregisterCommand(newCommand, command) :
+                        //this.creator.reregisterCommand(newCommand, command) :
+                        command.reload() :
                         this.creator.registerCommand(newCommand);
                     newCommand.guildIDs?.length > 0 ?
                         results.push([newCommand.commandName, '✅']) :

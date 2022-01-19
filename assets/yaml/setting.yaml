@@ -1,6 +1,5 @@
 bot:
   prefix: +
-  ownerId: &OWNER "384233645621248011"
   creatorSetting:
     applicationID: !ENV "APP_ID"
     publicKey: !ENV "APP_TOKEN"
@@ -28,10 +27,3 @@ bot:
     bookInfo: "672359094828531712" # 訂閱者本區
 
     freeResource: "681895247466201203"
-
-  manager:
-    - *OWNER
-    - "590430031281651722" # Traveler
-    - "546614210243854337" # Juxta
-    - "501782173364518912" # Raticate
-

@@ -1,35 +1,15 @@
-const pg = require('pg');
+const redis = require('redis');
 
-class PostgreSQL {
-    constructor(client) {
-        this.client = new pg.Client({
-            host: process.env['SQL_HOST'],
-            database: process.env['SQL_DB'],
-            user: process.env['SQL_USER'],
-            password: process.env['SQL_PWD'],
-            ssl: {
-                rejectUnauthorized: false
-            },
-        })
-        this.bot = client;
+const client = redis.createClient({ url: 'redis://' + process.env['REDIS_HOST'], password: process.env['REDIS_PASSWD'] });
+client.connect();
 
-        this.conn();
-
-        this.client.on('error', (err) => {
-            client.logger.log('PostgreSQL connection error.\n\t' + err, 'ERROR');
-        });
-
-        this.client.on('end', () => {
-            client.logger.log('PostgreSQL disconnected.', 'WARN');
-            this.conn();
-        });
+const getRandomCode = (length) => {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += charset.charAt(Math.floor(Math.random() * charset.length));
     }
-
-    async conn() {
-        this.client.connect()
-            .then(() => this.bot.logger.log('PostgreSQL database connected.', 'READY'))
-            .catch((err) => this.bot.logger.log('PostgreSQL connect error, ' + err, 'ERROR'));
-    }
+    return result;
 }
 
-module.exports = PostgreSQL;
+module.exports = { redis: client, getRandomCode };

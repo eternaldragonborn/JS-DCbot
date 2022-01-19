@@ -1,18 +1,14 @@
 const { MessageEmbed } = require('discord.js');
-const { SlashCommand, CommandOptionType } = require('slash-create');
-const DragonBot = require('../../../base/dragonBot');
+const { SlashCommand, CommandOptionType, ApplicationCommandPermissionType } = require('slash-create');
+const client = require('../../../index');
+const { owner, guilds } = require('../../../assets/const');
 
 module.exports = class FileReload extends SlashCommand {
-    /**
-     *
-     * @param { DragonBot } client
-     * @param {*} creator
-     */
-    constructor(client, creator) {
+    constructor(creator) {
         super(creator, {
             name: 'reload',
             description: '重載檔案',
-            //guildIDs: ['719132687897591808'],
+            guildIDs: guilds.main,
             options: [{
                 type: CommandOptionType.STRING,
                 name: 'type',
@@ -33,17 +29,28 @@ module.exports = class FileReload extends SlashCommand {
                     { name: 'clinet', value: 'client' },
                     { name: '訂閱系統', value: 'subscribeSystem' },
                 ]
-            }],
-            //defaultPermission: false,
+            },],
+            defaultPermission: false,
             deferEphemeral: true,
+            permissions: {
+                '669934356172636199': [{
+                    type: ApplicationCommandPermissionType.USER,
+                    id: '384233645621248011',
+                    permission: true
+                }],
+                '719132687897591808': [{
+                    type: ApplicationCommandPermissionType.USER,
+                    id: '384233645621248011',
+                    permission: true
+                }]
+            }
         })
-        this.client = client;
         this.filePath = __filename;
     }
 
     async run(ctx) {
-        if (ctx.user.id === this.client.owner)
-            this.client.unload(ctx.options.category ?? ctx.options.type)
+        if (ctx.user.id === owner)
+            client.unload(ctx.options.category ?? ctx.options.type)
                 .then(() => {
                     const embed = new MessageEmbed()
                         .setTitle(`${ctx.options.category ?? ctx.options.type} reloaded.`)
@@ -52,13 +59,13 @@ module.exports = class FileReload extends SlashCommand {
                         case 'prefix':
                             break;
                         case 'slashCommand': {
-                            this.client.loadSlash(ctx.options.category).forEach(result => {
+                            client.loadSlash(ctx.options.category).forEach(result => {
                                 embed.addField(result[0], result[1]);
                             });
                             break;
                         }
                         case 'event': {
-                            this.client.loadAllEvents();
+                            client.loadAllEvents();
                             break;
                         }
                         default:
@@ -66,6 +73,6 @@ module.exports = class FileReload extends SlashCommand {
                     }
                     ctx.send({ embeds: [embed], ephemeral: true });
                 })
-        else ctx.send({ content: '你沒有權限執行此指令' });
+        else ctx.send({ content: '你沒有權限使用該指令' });
     }
 }

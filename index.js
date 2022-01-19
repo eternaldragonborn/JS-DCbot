@@ -5,9 +5,11 @@ const client = new DragonBot({
     intents: [32767]
 });
 
-client.init();
-
 client.login(process.env.DISCORD_TOKEN);
+
+module.exports = client;
+
+client.init();
 
 /* client.on('ready', () => {
 

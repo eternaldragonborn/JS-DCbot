@@ -22,11 +22,11 @@ function format(tDate) {
 class Logger {
     constructor() {
         const logFile = './JSbot.log';
-        if (fs.existsSync(logFile)) {
-            fs.rmSync('./JSbot_last.log', { force: true });
-            fs.renameSync(logFile, './JSbot_last.log');
-        }
-        this.logStream = fs.createWriteStream(`${process.cwd()}/JSbot.log`);
+        // if (fs.existsSync(logFile)) {
+        //     fs.rmSync('./JSbot_last.log', { force: true });
+        //     fs.renameSync(logFile, './JSbot_last.log');
+        // }
+        // this.logStream = fs.createWriteStream(`${process.cwd()}/JSbot.log`);
     }
 
     /**
@@ -37,14 +37,15 @@ class Logger {
     log(content, type = 'INFO') {
         const timestamp = format(new Date(Date.now()));
 
-        this.logStream.write(`${timestamp} ${type} - ${content} \n`);
+        // this.logStream.write(`${timestamp} ${type} - ${content} \n`);
+        content = String(content);
 
         switch (type) {
             case 'READY':
                 console.log(content.green);
                 break;
             case 'DEBUG':
-                console.log(content.bgGreen);
+                console.log(content.bgGreen.black);
                 break;
             case 'WARN':
                 console.log(content.brightYellow);
