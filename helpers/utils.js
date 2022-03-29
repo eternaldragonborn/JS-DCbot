@@ -40,4 +40,12 @@ const writeYaml = (file, data, path = `${process.cwd()}/assets/yaml`, options = 
     return;
 }
 
-module.exports = { loadYaml, writeYaml }
+const getMessagePayload = (message) => {
+    const payload = {content: message.content + '\n', files : [] };
+    if(message.attachments) {
+        message.attachments.forEach(v => {payload.files.push(v.attachment)});
+    }
+    return payload;
+}
+
+module.exports = { loadYaml, writeYaml, getMessagePayload }

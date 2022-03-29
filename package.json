@@ -9,22 +9,29 @@
     "node": "16.x"
   },
   "scripts": {
-    "start": "nodemon ."
+    "watch": "nodemon .",
+    "dist": "build --tasks win-x64 .",
+    "start": "run --x64"
   },
   "dependencies": {
     "axios": "^0.24.0",
-    "cli-table": "^0.3.6",
-    "colors": "^1.4.0",
-    "discord.js": "^13.1.0",
+    "discord.js": "^13.6.0",
     "dotenv": "^10.0.0",
     "glob": "^7.2.0",
     "js-yaml": "^4.1.0",
+    "log4js": "^6.4.2",
     "luxon": "^2.2.0",
-    "pg": "^8.7.1",
+    "mongodb": "^4.4.1",
     "redis": "^4.0.1",
-    "slash-create": "^4.2.0"
+    "slash-create": "^4.2.0",
+    "twitter-api-v2": "^1.11.0"
   },
   "devDependencies": {
-    "nodemon": "2.0.15"
+    "nodemon": "2.0.15",
+    "nwjs-builder-phoenix": "^1.15.0"
+  },
+  "type": "commonjs",
+  "build": {
+    "nwVersion": "stable"
   }
 }

@@ -9,21 +9,3 @@ bot:
     slashCommand: !FOLDER [*COMMAND_FOLDER, "slashCommands"]
     prefixCommand: !FOLDER [*COMMAND_FOLDER, "prefixCommands"]
     event: !FOLDER "events"
-
-  guild:
-    testGuild: &TEST_GUILD "719132687897591808"
-    mainGuilds:
-      - *TEST_GUILD
-      - "669934356172636199"
-
-  channel:
-    startingLog: "867831786255417365"
-    errorLog: "867761321466265600"
-    commandLog: "747054636778913853"
-
-    subscribeLog: ""
-    subscribeCategory: "696655511197712414"
-    subscribeOverview: "675956755112394753"
-    bookInfo: "672359094828531712" # 訂閱者本區
-
-    freeResource: "681895247466201203"

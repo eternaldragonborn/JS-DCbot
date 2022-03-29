@@ -1,4 +1,5 @@
 const redis = require('redis');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const client = redis.createClient({ url: 'redis://' + process.env['REDIS_HOST'], password: process.env['REDIS_PASSWD'] });
 client.connect();
@@ -12,4 +13,9 @@ const getRandomCode = (length) => {
     return result;
 }
 
-module.exports = { redis: client, getRandomCode };
+const mongoPWD = encodeURIComponent(process.env.MONGO_PWD);
+const database = encodeURIComponent("Fafnir-Database");
+const uri = `mongodb+srv://EternalDragonborn:${mongoPWD}@fafnir-database.tk85b.mongodb.net/${database}?retryWrites=true&w=majority`;
+const mongo = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+module.exports = { redis: client, getRandomCode, mongo };

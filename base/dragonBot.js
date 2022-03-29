@@ -1,18 +1,19 @@
 const { Client } = require("discord.js");
-const Table = require('cli-table');
 const fs = require('fs');
-const { loadYaml } = require("../helpers/yaml");
+const { loadYaml } = require("../helpers/utils");
 const glob = require('glob');
 const { SlashCreator, GatewayServer } = require('slash-create');
 const { redis, getRandomCode } = require('../helpers/database');
+const log4js = require('log4js');
 
-const colors = require('colors');
-const { Logger } = require("../helpers/logger");
-colors.setTheme({
-    head: 'brightBlue',
-    success: 'brightGreen',
-    error: 'brightRed',
-    warn: 'brightYellow',
+log4js.configure({
+    appenders: {
+        out: { type: 'stdout' },
+        app: { type: 'file', filename: '.log' }
+    },
+    categories: {
+        default: { appenders: ['out', 'app'], level: "all" }
+    }
 });
 
 class DragonBot extends Client {
@@ -22,7 +23,7 @@ class DragonBot extends Client {
 
         this.setting = loadYaml('setting')['bot'];
         this.folder = this.setting['folder'];
-        this.Channel = this.setting['channel'];
+        this.logger = log4js.getLogger('default');
 
         this.creator = new SlashCreator(this.setting['creatorSetting'])
             .withServer(
@@ -30,18 +31,19 @@ class DragonBot extends Client {
                     (handler) => this.ws.on('INTERACTION_CREATE', handler)
                 )
             );
-        this.logger = new Logger();
-        // this.pg = new (require('../helpers/database'))(this).client;
     }
 
     async init() {
-        if (false)
-            await this.channels.fetch(this.Channel['startingLog']) //send last log to server
-                .then(channel => channel.send({ files: ['JSbot_last.log'] }))
-
-        this.logger.log('Bot initializing.');
-
-        const table = new Table({ head: ['Category'.head, 'File'.head, 'Status'.head, 'Reason/Error'.head] });
+        /**
+         * @typedef {Object} Book
+         * @property {string} url - 本本連結
+         * @property {Set<string>} users - 取得過連結之使用者
+         */
+        /**
+         * @type {{ [msgId: string]: Book }}
+         */
+        this.books = JSON.parse(await redis.get('book')) ?? {};
+        Object.keys(this.books).forEach(msgId => { this.books[msgId] = new Set(this.books[msgId]); });
 
         this.loadAllEvents();
         this.loadSlash();
@@ -51,8 +53,6 @@ class DragonBot extends Client {
         console.log(table.toString()); */
 
         redis.set('bot-token', getRandomCode(14));
-
-        this.logger.log('End of initialzing.', 'READY');
     }
 
     async unload(category) {
@@ -84,13 +84,13 @@ class DragonBot extends Client {
                         results.push([newCommand.commandName, '✅']) :
                         results.push([newCommand.commandName, '⚠️\nGLOBAL']);
                 } else {
+                    this.logger.trace(`⚠️Slash-command ${fileName} not enabled`)
                     results.push([newCommand.commandName, '⚠️\nNOT ENABLED!']);
-                    this.logger.log(`Command \`${newCommand.commandName}\` not enabled.`, 'WARN');
                 }
             }
             catch (error) {
+                this.logger.error(`Failed to load slash-command ${fileName}( ${error} )`);
                 results.push([fileName, `❌\n${String(error)}`]);
-                this.logger.log(`Failed to load file ${fileName}.\n\t${error}`, 'ERROR');
             }
         });
         this.creator.syncCommands({ syncGuilds: true, deleteCommands: true });
@@ -105,18 +105,15 @@ class DragonBot extends Client {
         const eventFiles = fs.readdirSync(this.folder['event']).filter(file => file.endsWith('.js'));
         const results = [];
 
-        this.logger.log('Loading "events" files.');
-
         eventFiles.forEach(file => {
             const result = ['event', file];
-            this.logger.log(`Loading file ${file}.`, 'INFO');
             try {
                 this.loadEvent(file);
                 result.push('SUCCESS'.success, '');
+                this.logger.info(`Event ${file} load success`);
             } catch (error) {
                 result.push('ERROR'.error, error.message.error);
-
-                this.logger.log(`Failed to load event ${file}\n\t${error}`, 'ERROR');
+                this.logger.error(`Event ${file} load failed, ${error.message}`)
             } finally { results.push(result); }
         });
         return results;
@@ -128,4 +125,6 @@ class DragonBot extends Client {
 
     //#endregion
 }
-module.exports = DragonBot;
+module.exports = {
+    DragonBot,
+};
