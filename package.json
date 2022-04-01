@@ -10,8 +10,7 @@
   },
   "scripts": {
     "watch": "nodemon .",
-    "dist": "build --tasks win-x64 .",
-    "start": "run --x64"
+    "start": "node index.js"
   },
   "dependencies": {
     "axios": "^0.24.0",
@@ -27,8 +26,7 @@
     "twitter-api-v2": "^1.11.0"
   },
   "devDependencies": {
-    "nodemon": "2.0.15",
-    "nwjs-builder-phoenix": "^1.15.0"
+    "nodemon": "2.0.15"
   },
   "type": "commonjs",
   "build": {
