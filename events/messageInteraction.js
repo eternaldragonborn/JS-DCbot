@@ -22,6 +22,19 @@ module.exports = async (client) => {
         msg.react(emojis.saveMessage);
       }
       //#endregion
+
+      //#region prevent posting book url
+      if (
+        msg.channelId === channels.book.subscriber &&
+        msg.content.match(/https?:\/\/([\w\-]+\.)+[\w\-]+(\/[\w\-./?%&=]*)?/)
+      ) {
+        await msg.delete();
+        msg.channel
+          .send(
+            `<@${msg.author.id}>\n防止網址洩漏，請使用訂閱系統網站進行本本上傳`,
+          )
+          .then((msg) => setTimeout(msg.delete, 10_000));
+      }
     }
     //#endregion
     else {

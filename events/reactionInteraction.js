@@ -32,13 +32,16 @@ module.exports = async (client) => {
               )
               .then((result) => result.value);
 
-            let payload = { content: "" };
-            if (reaction.message.embeds.length)
-              payload.embeds = reaction.message.embeds;
-            else {
-              payload = getMessagePayload(reaction.message);
+            if (!record) {
+              reaction.message.channel
+                .send({ content: "無該本本的紀錄" })
+                .then((msg) => setTimeout(msg.delete, 7_000));
+              client.logger.error(`無本本(${reaction.message.url})紀錄`);
+              return;
             }
-            payload.content += `\n下載：${record.url}`;
+            let payload = getMessagePayload(reaction.message);
+            if (payload.embeds) payload.embeds[0].addField("下載", record.url);
+            else payload.content += `\n下載：${record.url}`;
 
             user.send(payload).catch((err) => {
               reaction.message.channel
@@ -48,7 +51,9 @@ module.exports = async (client) => {
                 .then((msg) => setTimeout(() => msg.delete(), 5000));
             });
           } catch (err) {
-            client.logger.error("發送本本連結時發生錯誤， " + err.message);
+            client.logger.error(
+              `發送本本連結(${reaction.message.url})時發生錯誤，${err}`,
+            );
             reaction.message.channel
               .send({ content: "發生未知錯誤" })
               .then((msg) => setTimeout(() => msg.delete(), 5000));
