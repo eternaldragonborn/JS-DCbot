@@ -71,7 +71,7 @@ const getMessagePayload = (message) => {
       payload.files.push(v.attachment);
     });
   }
-  if (message.embeds) payload.embeds = message.embeds;
+  if (message.embeds.length) payload.embeds = message.embeds;
   return payload;
 };
 
