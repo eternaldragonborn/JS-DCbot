@@ -33,9 +33,10 @@ module.exports = async (client) => {
               .then((result) => result.value);
 
             if (!record) {
+              await client.channels.fetch(reaction.message.channel);
               reaction.message.channel
                 .send({ content: "無該本本的紀錄" })
-                .then((msg) => setTimeout(msg.delete, 7_000));
+                .then((msg) => setTimeout(() => msg.delete(), 7_000));
               client.logger.error(`無本本(${reaction.message.url})紀錄`);
               return;
             }

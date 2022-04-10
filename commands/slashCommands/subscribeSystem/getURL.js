@@ -1,6 +1,9 @@
 const {
   SlashCommand,
   ApplicationCommandPermissionType,
+  CommandContext,
+  ComponentType,
+  ButtonStyle,
 } = require("slash-create");
 const { manager, roles, guilds, owner } = require("../../../assets/const");
 const { redis, getRandomCode } = require("../../../helpers/database");
@@ -31,9 +34,16 @@ module.exports = class SubscribeSystem extends SlashCommand {
     this.filePath = __filename;
   }
 
+  /**
+   *
+   * @param { CommandContext } ctx
+   */
   async run(ctx) {
+    await ctx.defer(true);
+
     let userInfo = { id: ctx.user.id, status: 1 };
     const expire = Math.floor(DateTime.utc().plus({ minutes: 5 }).toSeconds());
+
     if (ctx.member.roles.includes(roles.subscriber)) {
       const id = getRandomCode(7);
       userInfo.status = manager.includes(userInfo.id) ? 2 : 1;
@@ -41,10 +51,24 @@ module.exports = class SubscribeSystem extends SlashCommand {
       try {
         await axios.get("https://subscribe-sys-web.herokuapp.com/test", {
           timeout: 5000,
-        });
+        }); // test website status
+
         await ctx.send({
-          content: `該網址為一次性，點擊過或超出時間請重新使用指令\nhttps://subscribe-sys-web.herokuapp.com/validation?token=${id}\n連結將於 <t:${expire}:R>(<t:${expire}:T>) 過期`,
+          content: `點擊下方按鈕前往網站\n連結將於 <t:${expire}:R>(<t:${expire}:T>) 過期`,
           ephemeral: true,
+          components: [
+            {
+              type: ComponentType.ACTION_ROW,
+              components: [
+                {
+                  type: ComponentType.BUTTON,
+                  style: ButtonStyle.LINK,
+                  url: `https://subscribe-sys-web.herokuapp.com/validation?token=${id}`,
+                  label: "連結",
+                },
+              ],
+            },
+          ],
         });
         await redis.set(id, userInfo, { EX: 300 });
       } catch (err) {
