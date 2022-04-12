@@ -19,7 +19,9 @@ const getRandomCode = (length) => {
 
 const mongoPWD = encodeURIComponent(process.env.MONGO_PWD);
 const database = encodeURIComponent("Fafnir-Database");
-const uri = `mongodb+srv://EternalDragonborn:${mongoPWD}@fafnir-database.tk85b.mongodb.net/${database}?retryWrites=true&w=majority`;
+const uri = process.env.DEV_MODE
+  ? `mongodb+srv://EternalDragonborn:${mongoPWD}@fafnir-database.tk85b.mongodb.net/${database}?retryWrites=true&w=majority`
+  : `mongodb://EternalDragonborn:${mongoPWD}@localhost:27017/?authSource=admin`;
 const mongo = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,

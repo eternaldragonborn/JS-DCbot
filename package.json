@@ -9,7 +9,7 @@
     "node": "16.x"
   },
   "scripts": {
-    "watch": "nodemon .",
+    "dev": "set \"DEV_MODE=1\" && node .",
     "start": "node index.js"
   },
   "dependencies": {

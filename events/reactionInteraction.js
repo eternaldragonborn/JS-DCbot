@@ -11,8 +11,24 @@ module.exports = async (client) => {
     if (user.bot) return;
     if (reaction.partial) await reaction.fetch();
 
+    //#region DMChannel delete message
+    if (
+      !reaction.message.guildId &&
+      reaction.emoji.name === emojis.deleteMessage
+    ) {
+      if (reaction.message.author != client.user) {
+        reaction.remove();
+        user
+          .send({ content: "由於DC限制，私訊僅能刪除bot自己的訊息" })
+          .then((msg) => setTimeout(() => msg.delete(), 7_000));
+      } else {
+        await reaction.message.delete();
+      }
+    }
+    //#endregion
+
     //#region main guild
-    if (guilds.main.includes(reaction.message.guildId)) {
+    else if (guilds.main.includes(reaction.message.guildId)) {
       //#region get bookURL
       if (
         Object.values(channels.book).includes(reaction.message.channelId) &&
@@ -21,7 +37,7 @@ module.exports = async (client) => {
         if (await redis.sIsMember("msg_ids", reaction.message.id)) {
           try {
             await mongo.connect();
-            const collection = mongo.db("book-record").collection("books");
+            const collection = mongo.db("bot-data").collection("book-record");
             /**
              * @type {{_id: string; url: string; users: string[]}}
              */
