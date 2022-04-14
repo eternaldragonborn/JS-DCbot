@@ -31,7 +31,7 @@ module.exports = class FileReload extends SlashCommand {
           description: "要刪除的對象ID，於私訊頻道無效",
         },
       ],
-      deferEphemeral: false,
+      deferEphemeral: true,
     });
     // this.enabled = false;
     this.filePath = __filename;
@@ -83,9 +83,14 @@ module.exports = class FileReload extends SlashCommand {
         }
       }
 
+      if (count === 0) {
+        await ctx.send("無任何訊息可刪除", { ephemeral: true });
+        return;
+      }
       const reply = await ctx.send(
         `即將刪除 \`${targetMessages.size}\` 則訊息，該動作無法復原，請確認`,
         {
+          ephemeral: this.deferEphemeral,
           components: [
             {
               type: ComponentType.ACTION_ROW,
@@ -108,13 +113,16 @@ module.exports = class FileReload extends SlashCommand {
         },
       );
 
+      const timeout = setTimeout(async () => {
+        await reply.edit("超出時間，請重新使用指令", { components: [] });
+      }, 7_000);
+
       ctx.registerComponent(
         "cls_confirm",
         async (componentCtx) => {
           if (componentCtx.user.id !== ctx.user.id) return;
 
-          reply.delete().catch();
-
+          clearTimeout(timeout);
           if (ctx.guildID)
             count = (await channel.bulkDelete(targetMessages, true)).size;
           else {
@@ -129,21 +137,31 @@ module.exports = class FileReload extends SlashCommand {
             }
           }
 
-          ctx.send(`已刪除 \`${count}\` 則訊息`).then((msg) => {
-            setTimeout(async () => await msg.delete(), 7_000);
-          });
+          await reply.edit(`已刪除 \`${count}\` 則訊息`, { components: [] });
         },
         7000,
         async () => {
-          await ctx.send("超出時間，動作取消", { ephemeral: true });
+          if (ctx.expired) return;
+          ctx.unregisterComponent("cls_confirm");
+          await reply.edit("超出時間，請重新使用指令", { components: [] });
         },
       );
 
-      ctx.registerComponent("cls_cancel", async (componentCtx) => {
-        if (componentCtx.user.id !== ctx.user.id) return;
+      ctx.registerComponent(
+        "cls_cancel",
+        async (componentCtx) => {
+          if (componentCtx.user.id !== ctx.user.id) return;
 
-        reply.delete().catch();
-      });
+          clearTimeout(timeout);
+          await reply.edit("動作取消", { components: [] });
+        },
+        7_000,
+        async () => {
+          if (ctx.expired) return;
+          ctx.unregisterComponent("cls_cancel");
+          await reply.edit("超出時間，請重新使用指令", { components: [] });
+        },
+      );
     } catch (error) {
       await ctx.send("執行時發生未知錯誤", { ephemeral: true });
       client.logger.error(error.message);

@@ -2,7 +2,6 @@ process.env.DEV_MODE
   ? require("dotenv").config({ path: "./.dev.env" })
   : require("dotenv").config();
 
-console.log(process.env.REDIS_HOST);
 const { DragonBot } = require("./base/dragonBot");
 
 const client = new DragonBot({
