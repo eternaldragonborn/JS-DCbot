@@ -9,27 +9,26 @@ const manager = [
 
 const guilds = {
   test: "719132687897591808",
-  furry: "669934356172636199",
-  main: ["719132687897591808", "669934356172636199"],
+  furry: "968540758107910164",
+  main: ["719132687897591808", "968540758107910164"],
 };
 
 const channels = {
-  subscribe_notification: "681543745824620570",
-  subscribe_category: "696655511197712414",
-  subscribe_overview: "675956755112394753",
+  subscribe_notification: "968540758594449466",
+  subscribe_category: "968540758594449461",
+  subscribe_overview: "968540758594449467",
   book: {
-    subscriber: "672359094828531712",
-    freeResource: "681895247466201203",
+    subscriber: "968540758594449463",
+    freeResource: "968540758418292790",
   },
 };
 
 const roles = {
-  subscriber: "683592115942457360",
+  subscriber: "968540758107910173",
 };
 
 const emojis = {
-  bookReaction: "076:713997954201157723",
-  saveMessage: "🐍",
+  snack: "🐍",
   deleteMessage: "❎",
 };
 

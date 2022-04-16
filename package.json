@@ -22,8 +22,7 @@
     "luxon": "^2.2.0",
     "mongodb": "^4.4.1",
     "redis": "^4.0.1",
-    "slash-create": "^5.4.1",
-    "twitter-api-v2": "^1.11.0"
+    "slash-create": "^5.5.3"
   },
   "devDependencies": {
     "nodemon": "2.0.15"

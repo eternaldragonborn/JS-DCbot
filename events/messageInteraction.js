@@ -19,7 +19,7 @@ module.exports = async (client) => {
         ) != -1 ||
         msg.attachments.size
       ) {
-        msg.react(emojis.saveMessage);
+        msg.react(emojis.snack);
       }
       //#endregion
 
@@ -33,8 +33,9 @@ module.exports = async (client) => {
           .send(
             `<@${msg.author.id}>\n防止網址洩漏，請使用訂閱系統網站進行本本上傳`,
           )
-          .then((msg) => setTimeout(msg.delete, 10_000));
+          .then((msg) => setTimeout(() => msg.delete(), 10_000));
       }
+      //#endregion
     }
     //#endregion
     else {

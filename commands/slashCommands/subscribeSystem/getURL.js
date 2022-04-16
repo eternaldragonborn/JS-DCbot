@@ -18,7 +18,7 @@ module.exports = class SubscribeSystem extends SlashCommand {
       guildIDs: guilds.main,
       permissions: [
         {
-          "669934356172636199": [
+          [guilds.furry]: [
             {
               type: ApplicationCommandPermissionType.ROLE,
               id: roles.subscriber,
@@ -44,12 +44,15 @@ module.exports = class SubscribeSystem extends SlashCommand {
     let userInfo = { id: ctx.user.id, status: 1 };
     const expire = Math.floor(DateTime.utc().plus({ minutes: 5 }).toSeconds());
 
-    if (ctx.member.roles.includes(roles.subscriber)) {
+    if (
+      ctx.member.roles.includes(roles.subscriber) ||
+      ctx.member.id === owner
+    ) {
       const id = getRandomCode(7);
       userInfo.status = manager.includes(userInfo.id) ? 2 : 1;
       userInfo = JSON.stringify(userInfo);
       try {
-        await axios.get("https://subscribe-sys-web.herokuapp.com/test", {
+        await axios.get("https://subscribe-manage-web.herokuapp.com/test", {
           timeout: 5000,
         }); // test website status
 
@@ -63,7 +66,7 @@ module.exports = class SubscribeSystem extends SlashCommand {
                 {
                   type: ComponentType.BUTTON,
                   style: ButtonStyle.LINK,
-                  url: `https://subscribe-sys-web.herokuapp.com/validation?token=${id}`,
+                  url: `https://subscribe-manage-web.herokuapp.com/validation?token=${id}`,
                   label: "連結",
                 },
               ],
