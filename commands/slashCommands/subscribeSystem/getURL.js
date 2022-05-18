@@ -57,7 +57,7 @@ module.exports = class SubscribeSystem extends SlashCommand {
         }); // test website status
 
         await ctx.send({
-          content: `點擊下方按鈕前往網站\n連結將於 <t:${expire}:R>(<t:${expire}:T>) 過期`,
+          content: `點擊下方按鈕開啟網頁，舊版網站暫時關閉。`, //，\n舊版網站連結將於 <t:${expire}:R>(<t:${expire}:T>) 過期`,
           ephemeral: true,
           components: [
             {
@@ -66,8 +66,8 @@ module.exports = class SubscribeSystem extends SlashCommand {
                 {
                   type: ComponentType.BUTTON,
                   style: ButtonStyle.LINK,
-                  url: `https://subscribe-manage-web.herokuapp.com/validation?token=${id}`,
-                  label: "連結",
+                  url: "https://fafnir-the-dragon.herokuapp.com/subscribe-sys",
+                  label: "新版網站(建議)",
                 },
               ],
             },

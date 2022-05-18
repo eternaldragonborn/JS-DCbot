@@ -79,7 +79,7 @@ module.exports = async (client) => {
           }
         }
         //#endregion
-        //#region snack
+        //#region re-send message
         else {
           try {
             await user.send(getMessagePayload(reaction.message));

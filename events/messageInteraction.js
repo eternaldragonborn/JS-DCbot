@@ -53,6 +53,7 @@ module.exports = async (client) => {
         await mongo.connect();
         const collection = mongo.db("book-record").collection("books");
         await collection.deleteOne({ _id: msg.id });
+        await mongo.close();
         client.logger.info(`本本紀錄(${msg.id})刪除`);
       } catch (err) {
         client.logger.error(`刪除本本紀錄(${msg.id})失敗，${err.message}`);
