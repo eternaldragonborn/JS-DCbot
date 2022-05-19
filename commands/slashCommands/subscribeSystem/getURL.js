@@ -52,7 +52,7 @@ module.exports = class SubscribeSystem extends SlashCommand {
       userInfo.status = manager.includes(userInfo.id) ? 2 : 1;
       userInfo = JSON.stringify(userInfo);
       try {
-        await axios.get("https://subscribe-manage-web.herokuapp.com/test", {
+        await axios.get("https://fafnir-the-dragon.herokuapp.com/api/status", {
           timeout: 5000,
         }); // test website status
 
