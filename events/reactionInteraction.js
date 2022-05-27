@@ -1,3 +1,4 @@
+const { MessageEmbed } = require("discord.js");
 const { channels, emojis, guilds } = require("../assets/const");
 const { DragonBot } = require("../base/dragonBot");
 const { redis, mongo } = require("../helpers/database");
@@ -54,9 +55,15 @@ module.exports = async (client) => {
                 client.logger.error(`無本本(${reaction.message.url})紀錄`);
                 return;
               }
+
               let payload = getMessagePayload(reaction.message);
               if (payload.embeds)
-                payload.embeds[0].addField("下載", record.url);
+                payload.embeds = [
+                  new MessageEmbed(
+                    payload.embeds[0].addField("下載", record.url),
+                  ),
+                ];
+              // payload.embeds[0].addField("下載", record.url);
               else payload.content += `\n下載：${record.url}`;
 
               user.send(payload).catch((err) => {
