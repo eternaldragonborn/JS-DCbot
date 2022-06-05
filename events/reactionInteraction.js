@@ -57,14 +57,11 @@ module.exports = async (client) => {
               }
 
               let payload = getMessagePayload(reaction.message);
-              if (payload.embeds)
-                payload.embeds = [
-                  new MessageEmbed(
-                    payload.embeds[0].addField("下載", record.url),
-                  ),
-                ];
-              // payload.embeds[0].addField("下載", record.url);
-              else payload.content += `\n下載：${record.url}`;
+              if (payload.embeds) {
+                const embed = new MessageEmbed(payload.embeds[0]);
+                embed.addField("下載", record.url);
+                payload.embeds = [embed];
+              } else payload.content += `\n下載：${record.url}`;
 
               user.send(payload).catch((err) => {
                 reaction.message.channel
