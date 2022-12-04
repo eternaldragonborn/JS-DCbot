@@ -1,0 +1,19 @@
+# fly.toml file generated for discord-dragon-bot on 2022-12-02T15:09:23+08:00
+
+app = "discord-dragon-bot"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[env]
+  SQL_HOST = "discord-dragon-bot-db.internal"
+  SQL_DB = "discord_dragon_bot"
+  SQL_USER = "postgres"
+  SQL_PWD = "WkKVLl5BgUl5VD1"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[build]
+  builder = "heroku/buildpacks:20"
+  dockerfile = "./Dockerfile"

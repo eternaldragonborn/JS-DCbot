@@ -2,34 +2,40 @@
   "name": "discordbot_js",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./scr/index.ts",
   "author": "EternalDragonborn",
   "license": "ISC",
-  "engines": {
-    "node": "16.x"
-  },
   "scripts": {
-    "dev": "set \"DEV_MODE=1\" && node .",
-    "start": "node index.js"
+    "dev:build": "tsc -p ./",
+    "dev": "set \"DEV=1\" & yarn nodemon --config nodemon.dev.json",
+    "start": "node ./dist/index.js",
+    "watch": "nodemon",
+    "deploy": "yarn dev:build & flyctl -a discord-dragon-bot deploy"
   },
   "dependencies": {
-    "axios": "^0.24.0",
-    "discord.js": "^13.6.0",
-    "dotenv": "^10.0.0",
-    "glob": "^7.2.0",
+    "@discordjs/builders": "^0.15.0",
+    "@discordx/importer": "^1.1.10",
+    "@mikro-orm/core": "^5.5.3",
+    "@mikro-orm/mongodb": "^5.5.3",
+    "axios": "^0.27.2",
+    "chalk": "^5.0.1",
+    "discord.js": "^13.8.1",
+    "discordx": "^9.8.0",
+    "glob": "^8.0.3",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
-    "log4js": "^6.4.2",
-    "luxon": "^2.2.0",
-    "mongodb": "^4.4.1",
-    "redis": "^4.0.1",
-    "slash-create": "^5.5.3"
+    "luxon": "^2.4.0",
+    "redis": "^4.1.1",
+    "reflect-metadata": "^0.1.13",
+    "winston": "^3.8.1"
   },
   "devDependencies": {
-    "nodemon": "2.0.15"
+    "@types/lodash": "^4.14.191",
+    "@types/luxon": "^2.3.2",
+    "@types/node": "^18.11.10",
+    "nodemon": "2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3"
   },
-  "type": "commonjs",
-  "build": {
-    "nwVersion": "stable"
-  }
+  "type": "module"
 }
