@@ -23,7 +23,7 @@ export const copyMessagePayload = (message: Message | PartialMessage) => {
     });
 
     // attachment size too large
-    if (size > 7.5 * 1024) payload.files = files;
+    if (size < 7.5 * 1024) payload.files = files;
     else payload.content += urls.join("\n");
   }
 
