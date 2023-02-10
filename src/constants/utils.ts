@@ -1,4 +1,8 @@
-import { Message, MessageOptions, PartialMessage } from "discord.js";
+import {
+  ActionRowBuilder,
+  MessageActionRowComponentBuilder,
+} from "@discordjs/builders";
+import { Message, BaseMessageOptions, PartialMessage } from "discord.js";
 
 /**
  * CSopy `message`'s content, attachments, and embeds to a new payload
@@ -6,7 +10,7 @@ import { Message, MessageOptions, PartialMessage } from "discord.js";
  * @returns new payload
  */
 export const copyMessagePayload = (message: Message | PartialMessage) => {
-  const payload: MessageOptions = {
+  const payload: BaseMessageOptions = {
     content: message.content + "\n",
   };
 
@@ -44,4 +48,8 @@ export const deleteAfter = async (
 ) => {
   const message = await sendMessage;
   setTimeout(async () => await message.delete(), delay * 1_000);
+};
+
+export const newActionRow = () => {
+  return new ActionRowBuilder<MessageActionRowComponentBuilder>();
 };

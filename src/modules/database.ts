@@ -7,8 +7,8 @@ import {
 import { RedisClientType } from "@redis/client";
 import { createClient } from "redis";
 
-import { BookRecord } from "../entities/book-record.js";
-import { errorLogging, logger } from "./logger.js";
+import { BookRecord } from "../entities/book-record";
+import { errorLogging, logger } from "./logger";
 
 class Database {
   redis: RedisClientType;
@@ -33,7 +33,6 @@ class Database {
         entities: [BookRecord],
         dbName: "bot-data",
         type: "mongo",
-        // allowGlobalContext: true,
       });
       this.mongoEm = this.mongodb.em;
 

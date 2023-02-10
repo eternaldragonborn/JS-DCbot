@@ -1,4 +1,4 @@
-import { MessageButton } from "discord.js";
+import { ButtonBuilder, ButtonStyle } from "discord.js";
 
 const owner = "384233645621248011";
 
@@ -34,13 +34,12 @@ const roles = {
 
 const emojis = {
   snack: "🐍",
-  deleteMessage: "❎",
+  deleteMessage: "❌",
 };
 
-const websiteButton = new MessageButton({
+const websiteButton = new ButtonBuilder({
   label: "網站連結",
-  type: "BUTTON",
-  style: "LINK",
+  style: ButtonStyle.Link,
   url: "https://fafnir-web.fly.dev/subscribe-sys",
 });
 

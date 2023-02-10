@@ -1,11 +1,22 @@
-import {DragonBot, db, logger, errorLogging} from "./modules/index.js";
+import { GatewayIntentBits, Partials } from "discord.js";
+import { DragonBot, db, errorLogging } from "./modules";
 
 const bot = new DragonBot({
-  intents: [32767],
-  partials: ["MESSAGE", "CHANNEL", "REACTION"],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildWebhooks,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.DirectMessageReactions,
+    GatewayIntentBits.MessageContent,
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction],
   simpleCommand: {
     prefix: "+",
   },
+  // botGuilds: process.env.DEV ? [guilds.test] : undefined,
 });
 
 async function initialize() {
@@ -13,8 +24,8 @@ async function initialize() {
   await bot.init();
 }
 
-initialize().catch(e => {
-  errorLogging("Bot初始化錯誤", {reason: e});
+initialize().catch((e) => {
+  errorLogging("Bot初始化錯誤", { reason: e });
 });
 
 export { bot };

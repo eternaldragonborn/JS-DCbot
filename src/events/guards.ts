@@ -1,11 +1,14 @@
 import {
   ButtonInteraction,
   CommandInteraction,
-  ContextMenuInteraction,
   Message,
   MessageReaction,
-  SelectMenuInteraction,
   VoiceState,
+  ChannelSelectMenuInteraction,
+  MentionableSelectMenuInteraction,
+  ModalSubmitInteraction,
+  StringSelectMenuInteraction,
+  ContextMenuCommandInteraction,
 } from "discord.js";
 import { GuardFunction, SimpleCommandMessage } from "discordx";
 
@@ -13,12 +16,15 @@ import type { ArgsOf } from "discordx";
 
 export const NotBot: GuardFunction<
   | ArgsOf<"messageCreate" | "messageReactionAdd" | "voiceStateUpdate">
-  | CommandInteraction
-  | ContextMenuInteraction
-  | SelectMenuInteraction
   | ButtonInteraction
+  | ChannelSelectMenuInteraction
+  | CommandInteraction
+  | ContextMenuCommandInteraction
+  | MentionableSelectMenuInteraction
+  | ModalSubmitInteraction
+  | StringSelectMenuInteraction
   | SimpleCommandMessage
-> = async (arg, _client, next) => {
+> = async (arg, client, next, guardData) => {
   const argObj = arg instanceof Array ? arg[0] : arg;
   const user =
     argObj instanceof CommandInteraction
@@ -31,16 +37,18 @@ export const NotBot: GuardFunction<
       ? argObj.author
       : argObj instanceof SimpleCommandMessage
       ? argObj.message.author
-      : argObj instanceof CommandInteraction ||
-        argObj instanceof ContextMenuInteraction ||
-        argObj instanceof SelectMenuInteraction ||
-        argObj instanceof ButtonInteraction
+      : argObj instanceof ButtonInteraction ||
+        argObj instanceof ChannelSelectMenuInteraction ||
+        argObj instanceof CommandInteraction ||
+        argObj instanceof ContextMenuCommandInteraction ||
+        argObj instanceof MentionableSelectMenuInteraction ||
+        argObj instanceof ModalSubmitInteraction ||
+        argObj instanceof StringSelectMenuInteraction
       ? argObj.member?.user
       : argObj.message.author;
+
   if (!user?.bot) {
+    guardData.message = "the NotBot guard passed";
     await next();
   }
 };
-
-// export const MainGuildOnly: GuardFunction<
-//   ArgsOf<

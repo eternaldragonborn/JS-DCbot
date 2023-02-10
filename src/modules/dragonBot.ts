@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { importx } from "@discordx/importer";
 import { Client, ClientOptions } from "discordx";
 
-import { errorLogging, logger } from "./logger.js";
+import { errorLogging, logger } from "./logger";
 
 export class DragonBot extends Client {
   constructor(options: ClientOptions) {
@@ -16,6 +16,11 @@ export class DragonBot extends Client {
       throw Error("No token");
     }
 
+    this.on("messageReactionAdd", (reaction, user) => {
+      if (user.bot) return;
+      this.executeReaction(reaction, user);
+    });
+
     try {
       if (process.env["DEV"])
         await importx(`${process.cwd()}/src/{events,commands}/**/*.{js,ts}`);
@@ -25,8 +30,10 @@ export class DragonBot extends Client {
       await this.login(process.env["BOT_TOKEN"]!);
       this.botId = this.user!.id;
 
-      await this.initApplicationCommands();
-      await this.initApplicationPermissions();
+      this.once("ready", async (client) => {
+        await this.initApplicationCommands();
+        logger.info(`Bot login as ${client.user.username}`);
+      });
 
       logger.info("bot initialized");
     } catch (error: any) {

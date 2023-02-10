@@ -6,21 +6,27 @@
   "author": "EternalDragonborn",
   "license": "ISC",
   "scripts": {
-    "dev:build": "tsc -p ./",
+    "build": "tsc -p ./",
     "dev": "set \"DEV=1\" & yarn nodemon --config nodemon.dev.json",
-    "start": "node ./dist/index.js",
-    "watch": "nodemon",
-    "deploy": "yarn dev:build & flyctl -a discord-dragon-bot deploy"
+    "local:build": "tsc -w -p ./",
+    "local:start": "yarn nodemon",
+    "local:scale:down": "flyctl scale count 0",
+    "scale:up": "flyctl scale count 1",
+    "push": "flyctl -a discord-dragon-bot deploy",
+    "deploy:push": "yarn local:scale:down & yarn build & yarn push & yarn scale:up",
+    "deploy:log": "flyctl logs",
+    "start:deploy": "yarn deploy",
+    "start:local": "concurrently yarn:local:*",
+    "start": "node ./dist/index.js"
   },
   "dependencies": {
-    "@discordjs/builders": "^0.15.0",
     "@discordx/importer": "^1.1.10",
     "@mikro-orm/core": "^5.5.3",
     "@mikro-orm/mongodb": "^5.5.3",
     "axios": "^0.27.2",
     "chalk": "^5.0.1",
-    "discord.js": "^13.8.1",
-    "discordx": "^9.8.0",
+    "discord.js": "^14.7.1",
+    "discordx": "^11.6.0",
     "glob": "^8.0.3",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
@@ -30,12 +36,14 @@
     "winston": "^3.8.1"
   },
   "devDependencies": {
+    "@types/glob": "^8.0.1",
     "@types/lodash": "^4.14.191",
     "@types/luxon": "^2.3.2",
     "@types/node": "^18.11.10",
+    "concurrently": "^7.6.0",
     "nodemon": "2.0.20",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.3"
+    "typescript": "^4.9.5"
   },
-  "type": "module"
+  "type": "commonjs"
 }

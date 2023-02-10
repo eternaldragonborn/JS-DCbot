@@ -1,6 +1,5 @@
 import { createLogger, format, transports, config } from "winston";
 import { DateTime } from "luxon";
-import chalk from "chalk";
 const { combine, timestamp, printf, prettyPrint, colorize, align, label } =
   format;
 
@@ -37,8 +36,8 @@ const errorLogging = (
   message: string,
   { reason, crit = false }: { reason?: any; crit?: boolean } = {},
 ) => {
-  message = `*** ${chalk.bgRed(message)} ***`;
-  if (reason) message += `\n${chalk.red(reason)}\n*******************`;
+  message = `*** ${message} ***`;
+  if (reason) message += `\n${reason}\n*******************`;
 
   logger.log(crit ? "crit" : "error", message);
 };
