@@ -15,7 +15,7 @@ const guilds = {
   main: ["719132687897591808", "968540758107910164"],
 };
 
-const testChannel = "855768767330385962";
+const testChannel = "1049005671951126649";
 const channels = {
   test: testChannel,
   subscribe_notification: "968540758594449466",

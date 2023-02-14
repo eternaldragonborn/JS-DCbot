@@ -50,6 +50,18 @@ export const deleteAfter = async (
   setTimeout(async () => await message.delete(), delay * 1_000);
 };
 
-export const newActionRow = () => {
+export const newMessageActionRow = () => {
   return new ActionRowBuilder<MessageActionRowComponentBuilder>();
 };
+
+export async function getResult<T>(
+  fn: Promise<T>,
+): Promise<[T, null] | [null, Error]> {
+  try {
+    const result = await fn;
+    return [result, null];
+  } catch (e: any) {
+    // logger.error(e);
+    return [null, e];
+  }
+}

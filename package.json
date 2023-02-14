@@ -8,8 +8,9 @@
   "scripts": {
     "build": "tsc -p ./",
     "dev": "set \"DEV=1\" & yarn nodemon --config nodemon.dev.json",
+    "build:dev": "concurrently \"yarn local:build\" \"yarn local:start --config nodemon.dev.json\"",
     "local:build": "tsc -w -p ./",
-    "local:start": "yarn nodemon",
+    "local:start": "yarn nodemon dist/index.js",
     "local:scale:down": "flyctl scale count 0",
     "scale:up": "flyctl scale count 1",
     "push": "flyctl -a discord-dragon-bot deploy",

@@ -36,16 +36,8 @@ export class OnReaction {
           try {
             downloadLink = book.url;
 
-            if (!book.users) {
-              book.users = [userMention(user.id)];
-
-              await em.flush();
-            } else if (book.users.includes(userMention(user.id))) {
-              book.users.push(userMention(user.id));
-              // book.users = _.uniq(book.users);
-
-              await em.flush();
-            }
+            book.users = _.uniq([...(book.users ?? []), userMention(user.id)]);
+            await em.flush();
           } catch (e) {
             errorLogging("取得本本網址錯誤", { reason: e });
             await deleteAfter(

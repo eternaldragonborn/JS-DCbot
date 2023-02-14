@@ -26,6 +26,7 @@ async function initialize() {
 
 initialize().catch((e) => {
   errorLogging("Bot初始化錯誤", { reason: e });
+  return;
 });
 
 export { bot };

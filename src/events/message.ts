@@ -57,20 +57,20 @@ export class OnMessage {
   }
 
   // book info deleted
-  @On({ event: "messageDelete" })
-  async onDelete([msg]: ArgsOf<"messageDelete">) {
-    if (!Object.values(channels.book).includes(msg.channelId)) return;
-    if (!(await db.redis.sIsMember("msg_ids", msg.id))) return;
+  // @On({ event: "messageDelete" })
+  // async onDelete([msg]: ArgsOf<"messageDelete">) {
+  //   if (!Object.values(channels.book).includes(msg.channelId)) return;
+  //   if (!(await db.redis.sIsMember("msg_ids", msg.id))) return;
 
-    const warnMessage = `本本訊息(${msg.id})被刪除`;
-    logger.warn(warnMessage);
-    await msg.channel.send(warnMessage);
+  //   const warnMessage = `本本訊息(${msg.id})被刪除`;
+  //   logger.warn(warnMessage);
+  //   await msg.channel.send(warnMessage);
 
-    // delete record from database
-    await db.createContext(db.mongoEm, async (em) => {
-      const book = await em.findOneOrFail(BookRecord, { _id: msg.id });
-      await em.removeAndFlush(book);
-      await db.redis.sRem("msg_ids", msg.id);
-    });
-  }
+  //   // delete record from database
+  //   await db.createContext(db.mongoEm, async (em) => {
+  //     const book = await em.findOneOrFail(BookRecord, { _id: msg.id });
+  //     await em.removeAndFlush(book);
+  //     await db.redis.sRem("msg_ids", msg.id);
+  //   });
+  // }
 }
